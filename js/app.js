@@ -784,7 +784,7 @@ const LAYERS = {
   postBias: { name: "Posterior − ASO (m)", kind: "div", lim: 1.5, f: (i, R) => R.postMean[i] - Y.aso[i] },
   priorBias: { name: "Prior − ASO (m)", kind: "div", lim: 1.5, f: (i, R) => R.priorMean[i] - Y.aso[i] },
   gain: { name: "|post − ASO| − |prior − ASO| (m)", kind: "div", lim: 1, f: (i, R) => Math.abs(R.postMean[i] - Y.aso[i]) - Math.abs(R.priorMean[i] - Y.aso[i]), lab: ["better", "worse"] },
-  postSd: { name: "Posterior SD (m)", kind: "seq", lo: 0, hi: 1.2, f: (i, R) => R.postSd[i] },
+  postSd: { name: "Posterior std (m)", kind: "seq", lo: 0, hi: 1.2, f: (i, R) => R.postSd[i] },
   update: { name: "Posterior − prior (m)", kind: "div", lim: 1, f: (i, R) => R.postMean[i] - R.priorMean[i] },
 };
 function layerColor(L) {
@@ -851,17 +851,26 @@ function rasterImage() {
   return cv;
 }
 
-let mapSvg, mapCanvas;
+let mapSvg, mapCanvas, zoom;
 function setupMap() {
   const box = $("#map");
   mapCanvas = document.createElement("canvas");
   box.append(mapCanvas);
   mapSvg = d3.select(box).append("svg").attr("role", "img").attr("aria-label", "Map of the East River basin with the two profiles");
-  const zoom = d3.zoom().scaleExtent([1, 10])
+  // zoom 1-10x; translateExtent (set in drawMap to the map box) keeps the basin inside the box
+  zoom = d3.zoom().scaleExtent([1, 10])
     .filter((ev) => !ev.target.closest(".handle") && (!ev.ctrlKey || ev.type === "wheel") && !ev.button)
     .on("zoom", (ev) => { map.t = ev.transform; drawMap(); });
   mapSvg.call(zoom).on("dblclick.zoom", null);
   $("#map-reset").addEventListener("click", () => mapSvg.transition().duration(250).call(zoom.transform, d3.zoomIdentity));
+  const zb = document.createElement("div"); zb.className = "zoombtns";
+  for (const [lab, k, name] of [["+", 1.6, "Zoom in"], ["−", 1 / 1.6, "Zoom out"]]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = lab; b.title = name; b.setAttribute("aria-label", name);
+    b.addEventListener("click", () => mapSvg.transition().duration(200).call(zoom.scaleBy, k));
+    zb.append(b);
+  }
+  box.append(zb);
   new ResizeObserver(() => drawMap()).observe(box);
 }
 
@@ -869,6 +878,10 @@ function drawMap() {
   if (!S || !RUNS[runIds()[0]]) return;
   const box = $("#map");
   map.W = box.clientWidth; map.H = box.clientHeight;
+  if (map.W !== map.zW || map.H !== map.zH) {
+    map.zW = map.W; map.zH = map.H;
+    zoom.extent([[0, 0], [map.W, map.H]]).translateExtent([[0, 0], [map.W, map.H]]);
+  }
   const dpr = window.devicePixelRatio || 1;
   mapCanvas.width = Math.round(map.W * dpr); mapCanvas.height = Math.round(map.H * dpr);
   const ctx = mapCanvas.getContext("2d");
@@ -1123,6 +1136,7 @@ function buildControls() {
   $("#pt-mode").addEventListener("change", (ev) => { state.field.mode = ev.target.value; requestUpdate(); });
   $("#kde-bw").addEventListener("change", (ev) => { state.kdeBw = ev.target.value; drawAll(); });
   // tools
+  $("#reset-all").addEventListener("click", () => { history.replaceState(null, "", location.pathname + location.search); location.reload(); });
   $("#copy-nb").addEventListener("click", () => copyText(notebookSettings(), "Notebook settings copied."));
   $("#copy-csv").addEventListener("click", () => copyText(profileCsv(), "Profile data copied as CSV."));
   if (CFG.downloads) { $("#dl-png").hidden = false; $("#dl-png").addEventListener("click", downloadPng); }

@@ -139,6 +139,12 @@ input[type="number"] { font-family: var(--font-data); width: 8.5em; }
 .colorbar { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: center; font: 400 0.72rem/1 var(--font-data); color: var(--ink-2); }
 .colorbar canvas { width: 100%; height: 8px; border-radius: 2px; }
 .handle { cursor: grab; }
+.zoombtns { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: 0 1px 4px rgb(0 0 0 / 0.15); }
+.zoombtns button { font: 600 1.1rem/1 var(--font-ui); width: 32px; height: 32px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; display: grid; place-items: center; }
+.zoombtns button + button { border-top: 1px solid var(--rule); }
+.zoombtns button:hover { background: var(--hover); }
+.reset-all { font: 500 0.86rem/1 var(--font-ui); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 7px 12px; min-height: 32px; cursor: pointer; }
+.reset-all:hover { background: var(--hover); }
 .handle:active { cursor: grabbing; }
 .hint { font-size: 0.76rem; color: var(--muted); }
 
@@ -217,6 +223,8 @@ footer { color: var(--muted); font-size: 0.8rem; }
       <div class="chips" role="group" aria-labelledby="lbl-show" id="show"></div></div>
     <div class="ctl" id="ctl-prods"><span class="label" id="lbl-prods">Gridded products</span>
       <div class="chips" role="group" aria-labelledby="lbl-prods" id="prods"></div></div>
+    <div class="ctl"><span class="label">&nbsp;</span>
+      <button type="button" class="reset-all" id="reset-all" title="Back to the settings the page opens with">Reset all</button></div>
     <div class="status" id="status" role="status" aria-live="polite"><span class="bar"><i></i></span><span class="msg">Loading data…</span></div>
   </section>
 
@@ -238,7 +246,7 @@ footer { color: var(--muted); font-size: 0.8rem; }
           <option value="postBias">Posterior − ASO</option>
           <option value="priorBias">Prior − ASO</option>
           <option value="gain">Change in |error|</option>
-          <option value="postSd">Posterior SD</option>
+          <option value="postSd">Posterior std</option>
           <option value="update">Update (posterior − prior)</option>
         </select>
         <span id="layer-exp" class="hint"></span>
@@ -247,7 +255,7 @@ footer { color: var(--muted); font-size: 0.8rem; }
         <button type="button" id="map-reset">Reset view</button>
       </div>
       <div class="colorbar" id="colorbar" hidden><span class="lo"></span><canvas width="200" height="8"></canvas><span class="hi"></span></div>
-      <p class="hint">Longitudinal profile: drag its body to move it, its ends to change the extent, the small square to change the width. ICESat-2 profile: it stays on the chosen track; drag its ends or body along the track, the small square changes the corridor width. Scroll or pinch to zoom.</p>
+      <p class="hint">Longitudinal profile: drag its body to move it, its ends to change the extent, the small square to change the width. ICESat-2 profile: it stays on the chosen track; drag its ends or body along the track, the small square changes the corridor width. Zoom with + and −, the mouse wheel or a pinch.</p>
     </div>
     <figure class="panel" id="pd"><h3></h3><div class="plot"></div></figure>
     <figure class="panel" id="pe"><h3></h3><div class="plot"></div></figure>
@@ -295,7 +303,7 @@ footer { color: var(--muted); font-size: 0.8rem; }
           <div class="field"><label for="pt-snap">Snap to highest terrain within ± (m)</label><input type="number" id="pt-snap" step="100" min="0"></div>
           <div class="field"><label for="pt-mode">Field point cells</label><select id="pt-mode"><option value="strip">Mean over the strip rows</option><option value="centre">Centre row only</option></select></div>
           <div class="field"><label for="pt-ic2">IC2 cell (index)</label><input type="number" id="pt-ic2" step="1" min="0"></div>
-          <div class="field"><label for="kde-bw">KDE bandwidth</label><select id="kde-bw"><option value="scott">Scott</option><option value="silverman">Silverman</option><option value="0.5">0.5 × SD-based</option><option value="0.25">0.25</option></select></div>
+          <div class="field"><label for="kde-bw">KDE bandwidth</label><select id="kde-bw"><option value="scott">Scott</option><option value="silverman">Silverman</option><option value="0.5">0.5 × std-based</option><option value="0.25">0.25</option></select></div>
           <div class="field"><label for="min-cells">Minimum cells per step</label><input type="number" id="min-cells" step="1" min="1"></div>
         </fieldset>
       </div>
