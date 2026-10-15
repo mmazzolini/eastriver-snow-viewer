@@ -1,0 +1,44 @@
+# Publishes the site on GitHub Pages: the page from this repository, the data files from the private
+# data repository (read with a read-only deploy key stored as the secret DATA_DEPLOY_KEY).
+name: Deploy site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Page
+        uses: actions/checkout@v4
+        with:
+          path: site
+      - name: Data (private repository)
+        uses: actions/checkout@v4
+        with:
+          repository: mmazzolini/eastriver-snow-viewer-data
+          ssh-key: ${{ secrets.DATA_DEPLOY_KEY }}
+          path: data
+      - name: Assemble
+        run: |
+          mkdir -p _site/data
+          cp -r site/index.html site/config.js site/js _site/
+          rsync -a --exclude .git --exclude README.md data/ _site/data/
+          touch _site/.nojekyll
+          du -sh _site _site/data
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
