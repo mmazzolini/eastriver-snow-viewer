@@ -11,7 +11,7 @@ const fmt2 = d3.format(".2f"), fmt0 = d3.format(".0f"), fmtPct = d3.format("+.0%
 
 // ------------------------------------------------------------------ state
 const state = {
-  year: "2024",
+  year: "2023",
   exps: ["GP"],                  // in selection order: the first one is the one on the map
   band: [25, 75],
   prior: { mean: true, band: true, members: true },
@@ -35,7 +35,11 @@ let updating = false, dirty = false, generation = 0;
 const runIds = () => state.exps.map((e) => state.year.slice(2) + e);
 const prodList = () => Object.values((Y && Y.prods) || {});
 const shownProds = () => prodList().filter((p) => state.prods[p.id] !== false);
-const dashOf = (p) => (p.dash ? { "stroke-dasharray": p.dash } : {});
+// WLDAS is drawn dotted (round dots), SNODAS dashed, UA solid
+const DOT = "0.1 3.8";
+const prodDash = (p) => (p.id === "wldas" ? DOT : p.dash);
+const dashOf = (p) => { const d = prodDash(p); return d ? { "stroke-dasharray": d, ...(d === DOT ? { "stroke-linecap": "round", "stroke-width": 2 } : {}) } : {}; };
+const dashSwatch = (color, d) => (d === DOT ? `repeating-linear-gradient(90deg, ${color} 0 2px, transparent 2px 5px)` : `repeating-linear-gradient(90deg, ${color} 0 4px, transparent 4px 6px)`);
 const expOf = (id) => id.slice(2);
 const label = (id) => (expOf(id) === "GP" ? "GPE" : "GCE");
 const bandLabel = () => (state.band[0] === 25 && state.band[1] === 75 ? "IQR" : `${state.band[0]}–${state.band[1]} %`);
@@ -97,8 +101,8 @@ function rowHeights() {
   const wide = getComputedStyle(fig).gridTemplateAreas.includes("a g d");
   const wa = wide && P.pa ? P.pa.plot.clientWidth : Math.min(fig.clientWidth - 24, 760);
   return { merged: Math.round(Math.max(260, Math.min(470, wa * 0.72))),
-    bias: Math.round(Math.max(180, Math.min(320, wa * 0.46))),
-    dist: Math.round(Math.max(230, Math.min(340, wa * 0.5))) };
+    bias: Math.round(Math.max(240, Math.min(430, wa * 0.62))),
+    dist: Math.round(Math.max(300, Math.min(450, wa * 0.68))) };
 }
 
 // ------------------------------------------------------------------ helpers
@@ -475,7 +479,7 @@ function hoverLayer(panel, x, m, h, steps, Vp, PR, axis, kind) {
     tip.append(head);
     const row = (color, name, value, dash) => {
       const r = document.createElement("div"); r.className = "r";
-      const k = document.createElement("i"); k.style.background = dash ? `repeating-linear-gradient(90deg, ${color} 0 4px, transparent 4px 6px)` : color;
+      const k = document.createElement("i"); k.style.background = dash ? dashSwatch(color, dash) : color;
       const n = document.createElement("span"); n.textContent = name;
       const b = document.createElement("b"); b.textContent = value;
       r.append(k, n, b); tip.append(r);
@@ -487,14 +491,14 @@ function hoverLayer(panel, x, m, h, steps, Vp, PR, axis, kind) {
         row(runColor(id), `${label(id)} post.${state.band ? ` (${bandLabel()})` : ""}`, `${fmt2(R.mean[i])}${state.band ? ` (${fmt2(R.lo[i])}–${fmt2(R.hi[i])})` : ""} m`);
         if (state.prior.mean) row(priorColor(id), `${label(id)} prior`, `${fmt2(R.prior[i])} m`, true);
       }
-      for (const p of shownProds()) row(C.rean, p.label, `${fmt2(PR[p.id].vals[i])} m`, !!p.dash);
+      for (const p of shownProds()) row(C.rean, p.label, `${fmt2(PR[p.id].vals[i])} m`, prodDash(p));
     } else {
       for (const id of V.ids) {
         const R = Vp.runs[id];
         row(runColor(id), `${label(id)} post. − ASO`, `${fmt2(R.mean[i] - Vp.aso[i])} m`);
         if (state.prior.mean) row(priorColor(id), `${label(id)} prior − ASO`, `${fmt2(R.prior[i] - Vp.aso[i])} m`, true);
       }
-      for (const p of shownProds()) row(C.rean, `${p.label} − ASO`, `${fmt2(PR[p.id].vals[i] - Vp.aso[i])} m`, !!p.dash);
+      for (const p of shownProds()) row(C.rean, `${p.label} − ASO`, `${fmt2(PR[p.id].vals[i] - Vp.aso[i])} m`, prodDash(p));
     }
     tip.hidden = false;
     const bx = Math.min(ev.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
@@ -641,7 +645,7 @@ function drawDist(panel, side, which) {
   }
   for (const d of pv) {
     const l = g.append("line").attr("x1", x(xr[0])).attr("x2", x(xr[1])).attr("y1", y(d.v)).attr("y2", y(d.v)).attr("stroke", C.rean).attr("stroke-width", 1.4);
-    if (d.p.dash) l.attr("stroke-dasharray", d.p.dash);
+    for (const [k, v] of Object.entries(dashOf(d.p))) l.attr(k, v);
   }
   if (state.show.aso && finite(aso)) g.append("line").attr("x1", x(xr[0])).attr("x2", x(xr[1])).attr("y1", y(aso)).attr("y2", y(aso)).attr("stroke", C.ink).attr("stroke-width", 1.8);
   const ay = side === "left" ? d3.axisLeft(y) : d3.axisRight(y);
@@ -666,7 +670,7 @@ function legendRow(box, draw, label) {
   row.append(t); box.append(row);
 }
 const L = {
-  line: (c, wdt = 2, dash = null) => (s) => { const l = s.append("line").attr("x1", 1).attr("x2", 25).attr("y1", 6).attr("y2", 6).attr("stroke", c).attr("stroke-width", wdt); if (dash) l.attr("stroke-dasharray", dash); },
+  line: (c, wdt = 2, dash = null) => (s) => { const l = s.append("line").attr("x1", 1).attr("x2", 25).attr("y1", 6).attr("y2", 6).attr("stroke", c).attr("stroke-width", dash === DOT ? 2.2 : wdt); if (dash) l.attr("stroke-dasharray", dash); if (dash === DOT) l.attr("stroke-linecap", "round"); },
   band: (c) => (s) => s.append("rect").attr("x", 1).attr("y", 1).attr("width", 24).attr("height", 10).attr("rx", 2).attr("fill", c),
   ic2: (exp) => (s) => { s.append("line").attr("x1", 13).attr("x2", 13).attr("y1", 0).attr("y2", 12).attr("stroke", C.ic2); marker(s, exp, 13, 6, 3.4, C.ic2); },
   dot: (c, a = 1) => (s) => s.append("circle").attr("cx", 13).attr("cy", 6).attr("r", 2.4).attr("fill", alpha(c, a)),
@@ -706,7 +710,7 @@ function drawLegends() {
   legendRow(dist, L.line(C.ink2, 1.2, "4 3"), "point or segment ends (a, b, d, e)");
   if (shownProds().length) {
     const pg = grp("gridded products");
-    for (const p of shownProds()) legendRow(pg, L.line(C.rean, 1.6, p.dash), `${p.label} (${p.res})`);
+    for (const p of shownProds()) legendRow(pg, L.line(C.rean, 1.6, prodDash(p)), `${p.label} (${p.res})`);
   }
 }
 
@@ -732,7 +736,7 @@ function drawScores() {
       const sc = PR[p.id].score, r = body.insertRow();
       const c0 = r.insertCell(); c0.textContent = name;
       const c1 = r.insertCell(); const k = document.createElement("span"); k.className = "runkey";
-      k.style.background = p.dash ? `repeating-linear-gradient(90deg, ${C.rean} 0 3px, transparent 3px 5px)` : C.rean;
+      k.style.background = prodDash(p) ? dashSwatch(C.rean, prodDash(p)) : C.rean;
       c1.append(k, document.createTextNode(p.label));
       cells(r, sc.n ? [String(sc.n), fmt2(sc.bias), fmt2(sc.rmse), fmt2(sc.mae), "–"] : [String(sc.n), "–", "–", "–", "–"]);
     }
@@ -1062,7 +1066,7 @@ function buildProducts() {
     const here = !!(Y.prods && Y.prods[pid]);
     const years = Object.keys(S.m.years).filter((yr) => (S.m.years[yr].products || []).some((q) => q.id === pid));
     const b = chip(box, { label: here ? meta.label : `${meta.label} (${years.join(", ")} only)`, key: `prod-${pid}`, pressed: here && state.prods[pid],
-      swatch: { cls: meta.dash ? "dash" : "", color: "var(--rean)" }, onToggle: (on) => { state.prods[pid] = on; drawAll(); } });
+      swatch: { cls: prodDash(meta) === DOT ? "dots" : meta.dash ? "dash" : "", color: "var(--rean)" }, onToggle: (on) => { state.prods[pid] = on; drawAll(); } });
     b.disabled = !here;
     b.title = meta.desc;
   }

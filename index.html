@@ -60,10 +60,10 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font: 400 15px/1.5 var(--font-ui);
-  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  padding-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
   padding-block: 20px 40px;
 }
-.wrap { max-width: 1600px; margin: 0 auto; display: grid; gap: 18px; }
+.wrap { max-width: 1920px; margin: 0 auto; display: grid; gap: 18px; }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(1.45rem, 1.1rem + 1.2vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
 h2 { font-size: 1.1rem; font-weight: 700; }
@@ -95,6 +95,7 @@ a { color: inherit; text-underline-offset: 2px; }
 .chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .chip .key { width: 14px; height: 3px; border-radius: 2px; background: currentColor; }
 .chip .key.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px); }
+.chip .key.dots { height: 4px; border-radius: 0; background: radial-gradient(circle at 2px 2px, currentColor 0 1.3px, transparent 1.7px) 0 0 / 5px 4px repeat-x; }
 .chip .key.band { height: 9px; opacity: 0.35; }
 .chip .key.dot { width: 8px; height: 8px; border-radius: 50%; }
 button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -110,10 +111,10 @@ input[type="number"] { font-family: var(--font-data); width: 8.5em; }
 
 /* ---------- figure ---------- */
 .figure {
-  display: grid; gap: 4px 14px; align-items: start;
-  grid-template-columns: minmax(0, 2.2fr) minmax(400px, 1.9fr) minmax(0, 1.8fr);
+  display: grid; gap: 4px 6px; align-items: start;
+  grid-template-columns: minmax(0, 2.4fr) minmax(400px, 1.6fr) minmax(0, 2fr);
   grid-template-areas: "a g d" "b g e" "c g f" "l l l";
-  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 10px 10px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 4px 10px;
 }
 .panel { position: relative; min-width: 0; }
 .panel h3 { font: 600 0.92rem/1.3 var(--font-ui); text-align: center; color: var(--ink); min-height: 1.3em; }
@@ -179,7 +180,16 @@ td.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
 .tools { display: flex; flex-wrap: wrap; gap: 8px; }
 .tools button { font: 500 0.84rem/1 var(--font-ui); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 8px 12px; cursor: pointer; }
 .tools button:hover, .mapbar button:hover, .chip:hover, .seg button:hover:not([aria-pressed="true"]) { background: var(--hover); }
-.about { color: var(--ink-2); font-size: 0.9rem; display: grid; gap: 8px; max-width: 80ch; }
+.about { color: var(--ink-2); font-size: 0.9rem; display: grid; gap: 10px; }
+.about > p, .about ul { max-width: 110ch; }
+.about h3 { font: 700 0.95rem/1.3 var(--font-display); color: var(--ink); margin-top: 8px; }
+.about ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.about table.prods th, .about table.prods td { text-align: left; white-space: normal; vertical-align: top; min-width: 9em; }
+.about table.prods td:first-child { min-width: 11em; }
+dl.acro { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px 24px; }
+dl.acro > div { display: grid; grid-template-columns: 7.5em 1fr; gap: 8px; }
+dl.acro dt { font: 500 0.82rem/1.4 var(--font-data); color: var(--ink); }
+dl.acro dd { margin: 0; }
 .about h2 { color: var(--ink); }
 .copied { font-size: 0.8rem; color: var(--muted); }
 textarea.copybox { width: 100%; min-height: 9em; font: 400 0.78rem/1.4 var(--font-data); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radius); padding: 8px; }
@@ -312,10 +322,64 @@ footer { color: var(--muted); font-size: 0.8rem; }
 
   <section class="card about" aria-labelledby="h-about">
     <h2 id="h-about">About the data</h2>
-    <p>Snow depth from the MuSA data-assimilation framework (FSM2 snow model, iterative ensemble smoother, 100 members) driven by TopoPyScale-downscaled ERA5. ICESat-2 snow depth at 400 cells is assimilated and spread to 5400 model cells with a Gaussian-process (GPE) or Gaspari–Cohn (GCE) prior correlation. The ensembles are mapped to the 50&nbsp;m grid with Gaussian-process regression and compared with Airborne Snow Observatory (ASO) lidar on 1 April 2023 and 3 April 2024.</p>
-    <p>Profile values follow the paper figure: each step is the mean over the profile cells that have model values and ASO; bands are the mean of the per-cell percentiles; IC2 cells show the ensemble of the observed cell. A segment shows, for each member, the mean over all the profile cells between its two lines (c) or over the IC2 cells between them (f); the IC2 likelihood of a segment is that of the mean observation with independent errors, as in the assimilation. The website stores every member rounded to the centimetre, so the values shown are within 5&nbsp;mm of the full-precision files in the data record.</p>
-    <p>Gridded products for comparison, on their own grid cells (each 50&nbsp;m cell takes the value of the product cell around it): <b>UA 800&nbsp;m</b> (University of Arizona daily snow depth, SNOTEL and COOP stations assimilated into a PRISM-driven snow model; Broxton et al. 2024), <b>SNODAS</b> (NOAA NOHRSC, 1&nbsp;km, 06&nbsp;UTC snapshot, model updated daily with observations; NSIDC G02158) and <b>WLDAS</b> (NASA, Noah-MP driven by NLDAS-2, 0.01°, no snow data assimilation; 2023 only, as the record ends in January 2024). Their CRPS in the scores table is the mean absolute error, as they are single values.</p>
-    <p>ASO snow depth © Airborne Snow Observatories, Inc., shown here for visualisation only. It is not part of the data record and may not be redistributed.</p>
+    <p>Companion to the paper on assimilating sparse ICESat-2 (IC2) snow depth with Gaussian-process (GP) spatial propagation in the East River basin, Colorado. The figure compares the experiments with Airborne Snow Observatory (ASO) lidar on 1 April 2023 and 3 April 2024.</p>
+
+    <h3>Method in brief</h3>
+    <ul class="plain">
+      <li><b>Model.</b> ERA5 downscaled with TopoPyScale drives FSM2 in 5400 GP-selected cells plus 400 IC2 representative cells; the ensembles are mapped to the 50&nbsp;m grid with the GP predictive mean.</li>
+      <li><b>Observations.</b> Synthetic IC2 snow depth: the 3&nbsp;m ASO map sampled along real ICESat-2 tracks (median per 50&nbsp;m cell), with a slope-dependent error SD of 0.40, 0.89 and 1.48&nbsp;m (slopes below 10°, 10–40°, above 40°), reduced by about 5&nbsp;%.</li>
+      <li><b>Assimilation.</b> 100 members, DES-MDA with 4 iterations over the water year. Precipitation (multiplicative, median 1) and temperature (additive) perturbations are spatially correlated through ρ; the update is localised with ρ² and ignores observations with ρ&nbsp;&lt;&nbsp;0.37.</li>
+      <li><b>Experiments.</b> <b>GPE</b>: ρ is the Matérn&nbsp;5/2 kernel trained on the 2022 ASO map. <b>GCE</b>: ρ is the Gaspari–Cohn function (c&nbsp;=&nbsp;5) on the same features.</li>
+      <li><b>Scores.</b> Bias and RMSE of the ensemble mean, CRPS of the ensemble, and CRPS skill = 1 − CRPS<sub>post</sub> / CRPS<sub>prior</sub>, all against ASO.</li>
+    </ul>
+
+    <h3>Reading the figure</h3>
+    <p>Profile steps are means over the profile cells; bands are the mean of the per-cell percentiles. A dragged segment gives each member's mean over the cells between its two lines. Gridded products are single values on their own grid (each 50&nbsp;m cell takes the product cell around it), so their CRPS is the mean absolute error. None of them uses ICESat-2.</p>
+
+    <h3>Gridded products for comparison</h3>
+    <div class="tablewrap"><table class="prods">
+      <thead><tr><th>Product</th><th>Resolution</th><th>Forcing</th><th>Snow model</th><th>Assimilated observations</th></tr></thead>
+      <tbody>
+        <tr><td><b>UA</b> (Univ. of Arizona; Broxton et al. 2024)</td><td>800&nbsp;m, daily</td><td>PRISM precipitation and temperature</td><td>Temperature-index model</td><td>SNOTEL snow depth and SWE, COOP snow depth</td></tr>
+        <tr><td><b>SNODAS</b> (NOAA NOHRSC)</td><td>1&nbsp;km, daily</td><td>Downscaled weather-model output</td><td>Multi-layer energy-balance model</td><td>Ground, airborne and satellite snow observations (SWE, depth, snow cover), nudged into the model daily</td></tr>
+        <tr><td><b>WLDAS</b> (NASA; Erlingis et al. 2021)</td><td>0.01°, daily</td><td>NLDAS-2 (0.125°, hourly) downscaled to 0.01°: precipitation scaled with PRISM, lapse-rate and slope/aspect corrections</td><td>Noah-MP&nbsp;3.6 land-surface model, multi-layer snowpack</td><td>None: open-loop run (leaf-area-index assimilation was tested only over California)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Acronyms</h3>
+    <dl class="acro">
+      <div><dt>ASO</dt><dd>Airborne Snow Observatory (lidar snow depth)</dd></div>
+      <div><dt>COOP</dt><dd>Cooperative Observer Program (NWS stations)</dd></div>
+      <div><dt>CRPS</dt><dd>Continuous Ranked Probability Score (for a single value, the mean absolute error)</dd></div>
+      <div><dt>DA</dt><dd>Data assimilation</dd></div>
+      <div><dt>DES-MDA</dt><dd>Deterministic ensemble smoother with multiple data assimilation</dd></div>
+      <div><dt>ERA5</dt><dd>ECMWF fifth-generation global atmospheric reanalysis</dd></div>
+      <div><dt>FSM2</dt><dd>Flexible Snow Model, version 2</dd></div>
+      <div><dt>GC</dt><dd>Gaspari–Cohn correlation function</dd></div>
+      <div><dt>GCE</dt><dd>Gaspari–Cohn experiment (control)</dd></div>
+      <div><dt>GP</dt><dd>Gaussian process</dd></div>
+      <div><dt>GPE</dt><dd>Gaussian-process experiment (GP-optimised kernel)</dd></div>
+      <div><dt>IC2</dt><dd>ICESat-2 (observed cells and profiles)</dd></div>
+      <div><dt>IQR</dt><dd>Interquartile range (25–75 %)</dd></div>
+      <div><dt>KDE</dt><dd>Kernel density estimate</dd></div>
+      <div><dt>MuSA</dt><dd>Multiple Snow data Assimilation system</dd></div>
+      <div><dt>NLDAS-2</dt><dd>North American Land Data Assimilation System, phase 2</dd></div>
+      <div><dt>NOAA / NOHRSC</dt><dd>National Oceanic and Atmospheric Administration / National Operational Hydrologic Remote Sensing Center</dd></div>
+      <div><dt>Noah-MP</dt><dd>Noah land-surface model with multi-parameterisation options</dd></div>
+      <div><dt>NSIDC</dt><dd>National Snow and Ice Data Center</dd></div>
+      <div><dt>NWS</dt><dd>National Weather Service</dd></div>
+      <div><dt>PRISM</dt><dd>Parameter-elevation Regressions on Independent Slopes Model (gridded climate data)</dd></div>
+      <div><dt>RMSE</dt><dd>Root mean squared error</dd></div>
+      <div><dt>SD / std</dt><dd>Standard deviation</dd></div>
+      <div><dt>SNODAS</dt><dd>Snow Data Assimilation System</dd></div>
+      <div><dt>SNOTEL</dt><dd>Snow Telemetry (NRCS station network)</dd></div>
+      <div><dt>SWE</dt><dd>Snow water equivalent</dd></div>
+      <div><dt>UA</dt><dd>University of Arizona</dd></div>
+      <div><dt>WLDAS</dt><dd>Western Land Data Assimilation System</dd></div>
+      <div><dt>WY</dt><dd>Water year (1 October – 30 September)</dd></div>
+    </dl>
+
+    <p>ASO snow depth © Airborne Snow Observatories, Inc., shown for visualisation only; it may not be redistributed.</p>
     <p id="data-source" class="hint"></p>
   </section>
   <footer id="footer"></footer>
