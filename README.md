@@ -1,12 +1,14 @@
 # East River snow profiles
 
-Interactive figure of the paper *TODO: title* (TODO: authors, journal, DOI): snow depth along two
+Interactive figure of the paper *Leveraging probabilistic machine learning to enable large scale assimilation
+of ICESat-2 snow depth observations* by Mazzolini, Aalstad, Cowherd, Alonso-González, Girotto and Treichler
+(manuscript for Geoscientific Model Development): snow depth along two
 profiles in the East River basin, Colorado, from the MuSA assimilation of ICESat-2 snow depth (GP and
 Gaspari–Cohn prior correlations), compared with ASO lidar and three gridded snow products.
 
 - **Site:** https://mmazzolini.github.io/eastriver-snow-viewer/
-- **Code of the paper and of this page:** TODO (paper repository; the page is `docs/` there)
-- **Data record (Zenodo):** TODO DOI
+- **Code of the paper and of this page:** https://github.com/mmazzolini/eastriver-snow-paper (the page is `docs/` there)
+- **Data record (Zenodo):** https://doi.org/10.5281/zenodo.23894419
 
 This repository holds only the page. GitHub Actions (`.github/workflows/pages.yml`) publishes it
 together with its data files, which are kept in a private repository.
