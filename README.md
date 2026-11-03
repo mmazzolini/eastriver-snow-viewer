@@ -7,7 +7,8 @@ profiles in the East River basin, Colorado, from the MuSA assimilation of ICESat
 Gaspari–Cohn prior correlations), compared with ASO lidar and three gridded snow products.
 
 - **Site:** https://mmazzolini.github.io/eastriver-snow-viewer/
-- **Code of the paper and of this page:** https://github.com/mmazzolini/eastriver-snow-paper (the page is `docs/` there)
+- **Code of the paper and of this page:** https://github.com/mmazzolini/eastriver-snow-paper (the page is `docs/` there;
+  archived at https://doi.org/10.5281/zenodo.23914632)
 - **Data record (Zenodo):** https://doi.org/10.5281/zenodo.23894419
 
 This repository holds only the page. GitHub Actions (`.github/workflows/pages.yml`) publishes it
